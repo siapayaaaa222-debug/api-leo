@@ -23,12 +23,10 @@ jobs:
           gh release download "$TAG" -p "*.apk" --repo "${{ github.repository }}" -D .
           mv *.apk unsigned.apk
 
-      - name: Align and Sign APK
+      - name: Sign APK
         run: |
           export ANDROID_BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
-          $ANDROID_BUILD_TOOLS/zipalign -v 4 unsigned.apk aligned.apk
-          $ANDROID_BUILD_TOOLS/apksigner sign --ks debug.p12 --ks-pass pass:android --key-pass pass:android --ks-type PKCS12 --min-sdk-version 23 --out signed.apk aligned.apk
-          $ANDROID_BUILD_TOOLS/apksigner verify signed.apk
+          $ANDROID_BUILD_TOOLS/apksigner sign --ks debug.p12 --ks-pass pass:android --key-pass pass:android --ks-type PKCS12 --min-sdk-version 23 --out signed.apk unsigned.apk
 
       - name: Upload signed APK to release
         env:
