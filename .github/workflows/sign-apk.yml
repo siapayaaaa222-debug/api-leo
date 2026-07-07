@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [sign-apk]
 
+permissions:
+  contents: write
+
 jobs:
   sign:
     runs-on: ubuntu-latest
@@ -18,14 +21,12 @@ jobs:
         run: |
           TAG="${{ github.event.client_payload.release_tag }}"
           gh release download "$TAG" -p "*.apk" --repo "${{ github.repository }}" -D .
-          ls -la *.apk
           mv *.apk unsigned.apk
 
       - name: Sign APK
         run: |
           jarsigner -storetype PKCS12 -keystore debug.p12 -storepass android -keypass android \
             -signedjar signed.apk unsigned.apk androiddebugkey
-          jarsigner -verify signed.apk
 
       - name: Upload signed APK to release
         env:
