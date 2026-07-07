@@ -8,29 +8,30 @@ jobs:
   sign:
     runs-on: ubuntu-latest
     steps:
-      - name: Decode keystore
+      - name: Setup signing
         run: |
-          cat > keystore.b64 << 'KS'
-          ${{ github.event.client_payload.keystore_b64 }}
-          KS
-          base64 -d keystore.b64 > debug.keystore
+          echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > debug.keystore 2>/dev/null || \
+          echo "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" | base64 -d > debug.keystore
 
-      - name: Download unsigned APK
-        run: curl -L -o unsigned.apk "${{ github.event.client_payload.apk_url }}"
+      - name: Download unsigned APK from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ github.event.client_payload.release_tag }}"
+          gh release download "$TAG" -p "*.apk" --repo "${{ github.repository }}" -D .
+          ls -la *.apk
+          mv *.apk unsigned.apk
 
       - name: Sign APK
         run: |
           jarsigner -keystore debug.keystore -storepass android -keypass android \
             -signedjar signed.apk unsigned.apk androiddebugkey
+          jarsigner -verify signed.apk
 
-      - name: Create release and upload
+      - name: Upload signed APK to release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="apk-$(date +%s)"
-          gh release create "$TAG" signed.apk --repo "${{ github.repository }}" --title "Signed APK $TAG"
-          echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
-
-      - name: Output download URL
-        run: |
-          echo "download_url=https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/signed.apk" >> $GITHUB_OUTPUT
+          TAG="${{ github.event.client_payload.release_tag }}"
+          gh release upload "$TAG" signed.apk --repo "${{ github.repository }}" --clobber
+          echo "âœ… Signed APK uploaded to release $TAG"
