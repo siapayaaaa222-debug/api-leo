@@ -1,0 +1,36 @@
+name: Sign APK
+
+on:
+  repository_dispatch:
+    types: [sign-apk]
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decode keystore
+        run: |
+          cat > keystore.b64 << 'KS'
+          ${{ github.event.client_payload.keystore_b64 }}
+          KS
+          base64 -d keystore.b64 > debug.keystore
+
+      - name: Download unsigned APK
+        run: curl -L -o unsigned.apk "${{ github.event.client_payload.apk_url }}"
+
+      - name: Sign APK
+        run: |
+          jarsigner -keystore debug.keystore -storepass android -keypass android \
+            -signedjar signed.apk unsigned.apk androiddebugkey
+
+      - name: Create release and upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="apk-$(date +%s)"
+          gh release create "$TAG" signed.apk --repo "${{ github.repository }}" --title "Signed APK $TAG"
+          echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Output download URL
+        run: |
+          echo "download_url=https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/signed.apk" >> $GITHUB_OUTPUT
